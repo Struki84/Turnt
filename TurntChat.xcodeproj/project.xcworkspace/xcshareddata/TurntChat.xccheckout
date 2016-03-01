@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>6EDE6C47-F4CA-4746-9AFD-7B4EB0A6705F</string>
+	<key>IDESourceControlProjectName</key>
+	<string>TurntChat</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>6A25A5C3FB7B4554BB9FFA47DC26C684E0A6D9F6</key>
+		<string>https://github.com/ManifestMedia/TurntChat-iOS-Client.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>TurntChat.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>6A25A5C3FB7B4554BB9FFA47DC26C684E0A6D9F6</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/ManifestMedia/TurntChat-iOS-Client.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>6A25A5C3FB7B4554BB9FFA47DC26C684E0A6D9F6</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>6A25A5C3FB7B4554BB9FFA47DC26C684E0A6D9F6</string>
+			<key>IDESourceControlWCCName</key>
+			<string>TurntChat</string>
+		</dict>
+	</array>
+</dict>
+</plist>

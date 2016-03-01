@@ -1,0 +1,21 @@
+/* 
+  Localizable.strings
+  TurntChat
+
+  Created by Michał Ciesielski on 29.12.2015.
+  Copyright © 2015 Manifest Media ltd. All rights reserved.
+*/
+
+"To start chatting add people by tapping + icon on the top left" = "To start chatting add people by tapping + icon on the top left";
+
+"CHOOSE USERNAME" = "CHOOSE USERNAME";
+
+"ENTER" = "ENTER";
+
+"DONE" = "DONE";
+
+"Cancel" = "Cancel";
+
+"'\(self.usernameTextField.text!)' is already taken. Try something else." = "'\(self.usernameTextField.text!)' is already taken. Try something else.";
+
+"Something went wrong ;(" = "Something went wrong ;(";

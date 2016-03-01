@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Development</key>
+	<true/>
+	<key>Config</key>
+	<dict>
+		<key>Development</key>
+		<dict>
+			<key>MaxAllowedAccounts</key>
+			<integer>5</integer>
+			<key>PaidApp</key>
+			<true/>
+			<key>ApiUrl</key>
+			<string>http://turnt-chat.herokuapp.com/api/</string>
+			<key>ApiKey</key>
+			<string>xxx</string>
+			<key>SocketURL</key>
+			<string>turnt-chat.herokuapp.com</string>
+		</dict>
+		<key>Production</key>
+		<dict>
+			<key>ApiUrl</key>
+			<string>http://turntchat.com/api/</string>
+		</dict>
+	</dict>
+	<key>AlertMsgs</key>
+	<dict>
+		<key>missing_username</key>
+		<string>Please enter username!</string>
+		<key>username_taken</key>
+		<string>Username allready assigned to another user!</string>
+		<key>server_response_500</key>
+		<string>There was a problem while connecting to our servers!</string>
+		<key>max_allowed_accounts</key>
+		<string>You have maximum number of accounts</string>
+	</dict>
+	<key>TestFriendsSearch</key>
+	<array>
+		<dict>
+			<key>id</key>
+			<integer>1</integer>
+			<key>username</key>
+			<string>Sim0ne</string>
+			<key>active</key>
+			<true/>
+			<key>image</key>
+			<data></data>
+			<key>activted_on</key>
+			<date>2015-07-14T16:23:39Z</date>
+			<key>deactivated_on</key>
+			<date>2015-07-14T16:23:57Z</date>
+		</dict>
+		<dict>
+			<key>id</key>
+			<integer>2</integer>
+			<key>username</key>
+			<string>SimTwo</string>
+			<key>active</key>
+			<true/>
+			<key>image</key>
+			<data></data>
+			<key>activted_on</key>
+			<date>2015-07-14T16:23:39Z</date>
+			<key>deactivated_on</key>
+			<date>2015-07-14T16:23:57Z</date>
+		</dict>
+	</array>
+	<key>ApiEndpoints</key>
+	<dict/>
+</dict>
+</plist>
