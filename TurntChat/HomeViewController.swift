@@ -27,7 +27,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     var currentAccountId: Int? = 0
     var firstTimeAfterLogin: Bool = true
     
-    
     //MRAK: - Lifecycle
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

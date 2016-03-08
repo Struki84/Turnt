@@ -121,7 +121,7 @@ class ApiRequest: ApiManager {
     }
 
     func deleteAccount(requestBody: [String: String], completionHandler:(success: Bool, accountDeleted: Bool, responseBody: JSON, error: Int?) -> Void) {
-        let link = "account/\(requestBody["account_id"]!)uiop[===890-===-=0890-=98"
+        let link = "account/\(requestBody["account_id"]!)"
         let HTTPMethod = "DELETE"
        
         super.sendRequest(link, HTTPMethod: HTTPMethod, completion: {(requestSuccessfull) in
@@ -231,9 +231,3 @@ class ApiRequest: ApiManager {
         })
     }
 }
-
-
-
-
-
-

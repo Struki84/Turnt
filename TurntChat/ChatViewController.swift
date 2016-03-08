@@ -40,7 +40,6 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     let playerController = AVPlayerViewController()
     var displayingMediaMode: Bool = false
 
-    
     var counter:Int = 0 {
         didSet {
             let fractionalProgress = Float(counter) / 100.0
