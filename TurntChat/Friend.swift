@@ -20,17 +20,17 @@ class Friend: NSManagedObject {
     @NSManaged var id: NSNumber
     @NSManaged var poked_me: NSNumber
     @NSManaged var username: String
-    @NSManaged var image: NSData
+    @NSManaged var image: Data
     @NSManaged var account: Account
     
     static let entityName: String = "Friend"
-    static let context = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    static let context = (UIApplication.shared.delegate as! AppDelegate).managedObjectContext
     
     //MARK: Static functions
     
     //Create record in context and return new entity
-    class func create(withData: JSON, forAccount: Account) -> Friend {
-        let newFriend = NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context!) as! Friend
+    class func create(_ withData: JSON, forAccount: Account) -> Friend {
+        let newFriend = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context!) as! Friend
         newFriend.id = withData["id"].intValue
         newFriend.username = withData["username"].stringValue
         newFriend.account_id = forAccount.id
@@ -40,21 +40,21 @@ class Friend: NSManagedObject {
         newFriend.online = withData["online"].numberValue
         newFriend.account = forAccount
         
-        if (withData["image"].rawString()!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 2000) {
+        if (withData["image"].rawString()!.lengthOfBytes(using: String.Encoding.utf8) > 2000) {
             if let image: String = withData["image"].string {
-                let imgData: NSData = NSData(base64EncodedString: image, options:NSDataBase64DecodingOptions(rawValue: 0))!
+                let imgData: Data = Data(base64Encoded: image, options:NSData.Base64DecodingOptions(rawValue: 0))!
                 newFriend.image = imgData
             }
         } else {
-            newFriend.image = NSData.init()
+            newFriend.image = Data.init()
         }
         
         
         return newFriend
     }
     
-    class func create(withData: [String: AnyObject], forAccount: Account) -> Friend {
-        let newFriend = NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context!) as! Friend
+    class func create(_ withData: [String: AnyObject], forAccount: Account) -> Friend {
+        let newFriend = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context!) as! Friend
         newFriend.id = withData["id"] as! NSNumber
         newFriend.username = withData["username"] as! String
         newFriend.account_id = forAccount.id
@@ -69,14 +69,14 @@ class Friend: NSManagedObject {
     
     
     //Get record by id
-    class func get(id: NSNumber) -> Friend? {
+    class func get(_ id: NSNumber) -> Friend? {
         
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let predicate = NSPredicate(format: "id == %@", id)
         var accounts: [Friend] = []
         
         fetchRequest.predicate = predicate
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Friend] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Friend] {
             accounts = fetchResults
         }
         
@@ -86,13 +86,13 @@ class Friend: NSManagedObject {
     //Get all records
     
     class func all() -> [Friend] {
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         var friends: [Friend] = []
         
         
         fetchRequest.sortDescriptors = [sortDescriptor]
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Friend] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Friend] {
             friends = fetchResults
         }
         
@@ -100,13 +100,13 @@ class Friend: NSManagedObject {
     }
     
     //Find record by username
-    class func findByUsername(username: String) -> Friend? {
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+    class func findByUsername(_ username: String) -> Friend? {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let predicate = NSPredicate(format: "username == %@", username)
         var friends: [Friend] = []
         
         fetchRequest.predicate = predicate
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Friend] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Friend] {
             friends = fetchResults
         }
         
@@ -123,9 +123,9 @@ class Friend: NSManagedObject {
     class func deleteAll() {
         var accounts = all()
         for account in accounts {
-            context!.deleteObject(account as NSManagedObject)
+            context!.delete(account as NSManagedObject)
         }
-        accounts.removeAll(keepCapacity: false)
+        accounts.removeAll(keepingCapacity: false)
         do {
             try context!.save()
         } catch _ {
@@ -147,7 +147,7 @@ class Friend: NSManagedObject {
     
     func remove() {
         let context = Friend.context
-        context!.deleteObject(self)
+        context!.delete(self)
         do {
             try context!.save()
         } catch let error as NSError {
@@ -159,13 +159,13 @@ class Friend: NSManagedObject {
         
 //        print("image lenght: \(self.image.length)")
         var image: UIImage = UIImage(named: "profile_placeholder")!
-        if self.image.length > 0 {
+        if self.image.count > 0 {
             image = UIImage(data: self.image)!
         }
         return image
     }
     
-    func setProfileImage(image: UIImage) {
+    func setProfileImage(_ image: UIImage) {
         self.image = UIImagePNGRepresentation(image)!
     }
     

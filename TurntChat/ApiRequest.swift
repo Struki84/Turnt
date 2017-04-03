@@ -18,7 +18,7 @@ class ApiRequest: ApiManager {
     
 //MARK: - Custom Requests
     
-    func login(requestBody: [String : String], completionHandler: (success: Bool, logedIn: Bool?, responseBody: JSON, error: Int?) -> Void) {
+    func login(_ requestBody: [String : String], completionHandler: (_ success: Bool, _ logedIn: Bool?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "login"
         let HTTPMethod = "POST"
         
@@ -32,7 +32,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func recoveryAccount(requestBody: [String: String], completionHandler: (success: Bool, logedIn: Bool?, responseBody: JSON, error: Int?) -> Void) {
+    func recoveryAccount(_ requestBody: [String: String], completionHandler: (_ success: Bool, _ logedIn: Bool?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/recovery"
         let HTTPMethod = "POST"
         
@@ -46,7 +46,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func createAccount(requestBody: [String: String], completionHandler:(success: Bool, accountCreated: Bool?, userAccounts: JSON!, responseBody: JSON, error: Int?) -> Void) {
+    func createAccount(_ requestBody: [String: String], completionHandler:(_ success: Bool, _ accountCreated: Bool?, _ userAccounts: JSON?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/save/"
         let HTTPMethod = "POST"
         
@@ -62,7 +62,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func updateAccount(requestBody: [String : String], completionHandler:(success: Bool, accountUpdated: Bool?, userAccount: JSON!, responseBody: JSON, error: Int?) -> Void) {
+    func updateAccount(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ accountUpdated: Bool?, _ userAccount: JSON?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/save/\(requestBody["account_id"]!)"
         let HTTPMethod = "POST"
         
@@ -78,7 +78,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func getAccounts(completionHandler: (success: Bool, accounts: JSON, error: Int?) -> Void) {
+    func getAccounts(_ completionHandler: (_ success: Bool, _ accounts: JSON, _ error: Int?) -> Void) {
         let link = "accounts"
         let HTTPMethod = "GET"
         
@@ -92,7 +92,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func getAccount(requestBody: [String : String], completionHandler: (success: Bool, userAccount: JSON, error: Int?) -> Void) {
+    func getAccount(_ requestBody: [String : String], completionHandler: (_ success: Bool, _ userAccount: JSON, _ error: Int?) -> Void) {
         let link = "account/\(requestBody["id"]!)"
         let HTTPMethod = "GET"
         
@@ -106,7 +106,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func getFriendsForUser(requestBody: [String : String], completionHandler: (success: Bool, friends: JSON, error: Int?) -> Void) {
+    func getFriendsForUser(_ requestBody: [String : String], completionHandler: (_ success: Bool, _ friends: JSON, _ error: Int?) -> Void) {
         let link = "friends/\(requestBody["id"]!)"
         let HTTPMethod = "GET"
         
@@ -120,7 +120,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func deleteAccount(requestBody: [String: String], completionHandler:(success: Bool, accountDeleted: Bool, responseBody: JSON, error: Int?) -> Void) {
+    func deleteAccount(_ requestBody: [String: String], completionHandler:(_ success: Bool, _ accountDeleted: Bool, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/\(requestBody["account_id"]!)"
         let HTTPMethod = "DELETE"
        
@@ -134,7 +134,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func sendFriendRequest(requestBody: [String : String], completionHandler:(succes: Bool, sentRequest: Bool, userAccount: JSON!, responseBody: JSON, error: Int?) -> Void) {
+    func sendFriendRequest(_ requestBody: [String : String], completionHandler:(_ succes: Bool, _ sentRequest: Bool, _ userAccount: JSON?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/\(requestBody["account_id"]!)/requests/\(requestBody["target_account_id"]!)"
         let HTTPMethod = "PUT"
         
@@ -150,7 +150,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func confirmFriendRequest(requestBody: [String : String], completionHandler:(success: Bool, friendRequestConfirmed: Bool, userAccount: JSON!, responseBody: JSON, error: Int?) -> Void) {
+    func confirmFriendRequest(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ friendRequestConfirmed: Bool, _ userAccount: JSON?, _ responseBody: JSON, _ error: Int?) -> Void) {
         print("ApiRequest confirmFriendRequest")
         let link = "account/\(requestBody["account_id"]!)/confirms/\(requestBody["target_account_id"]!)"
         let HTTPMethod = "PUT"
@@ -167,7 +167,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func updateStatus(requestBody: [String : String], completionHandler:(success: Bool, responseBody: JSON, error: Int?) -> Void) {
+    func updateStatus(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "user/\(requestBody["status"]!)"
         let HTTPMethod = "PUT"
                 
@@ -177,7 +177,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func deleteFriend(requestBody: [String : String], completionHandler:(success: Bool, friendDeleted: Bool?, userAccounts: JSON, responsBody: JSON, error: Int?) -> Void){
+    func deleteFriend(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ friendDeleted: Bool?, _ userAccounts: JSON, _ responsBody: JSON, _ error: Int?) -> Void){
         let link = "friend/\(requestBody["buddy_id"]!)"
         let HTTPMethod = "DELETE"
         
@@ -193,7 +193,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func searchFriends(completionHandler:(success: Bool, searchFriends: JSON, error: Int?) -> Void) {
+    func searchFriends(_ completionHandler:(_ success: Bool, _ searchFriends: JSON, _ error: Int?) -> Void) {
         let link = "search/friends"
         let HTTPMethod = "GET"
         
@@ -203,7 +203,7 @@ class ApiRequest: ApiManager {
         })
     }
 
-    func poke(requestBody: [String : String], completionHandler:(success: Bool, poked: Bool?, responseBody: JSON?, error: Int?) -> Void) {
+    func poke(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ poked: Bool?, _ responseBody: JSON?, _ error: Int?) -> Void) {
         let link = "account/\(requestBody["id"]!)/pokes/\(requestBody["buddy_id"]!)"
         let HTTPMethod = "PUT"
         
@@ -217,7 +217,7 @@ class ApiRequest: ApiManager {
         })
     }
     
-    func dismissPoke(requestBody: [String : String], completionHandler:(success: Bool, pokeDissmised: Bool?, responseBody: JSON, error: Int?) -> Void) {
+    func dismissPoke(_ requestBody: [String : String], completionHandler:(_ success: Bool, _ pokeDissmised: Bool?, _ responseBody: JSON, _ error: Int?) -> Void) {
         let link = "account/\(requestBody["id"]!)/dissmised/\(requestBody["buddy_id"]!)"
         let HTTPMethod = "PUT"
         

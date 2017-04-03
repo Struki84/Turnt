@@ -23,19 +23,19 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
     let apiRequest: ApiRequest! = ApiRequest()
     
     @IBAction func searchDone() {
-        self.dismissViewControllerAnimated(true, completion: {})
+        self.dismiss(animated: true, completion: {})
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
-        searchBar.setImage(UIImage(named: "Loupe"), forSearchBarIcon: UISearchBarIcon.Search, state: UIControlState.Normal)
+        searchBar.setImage(UIImage(named: "Loupe"), for: UISearchBarIcon.search, state: UIControlState())
         searchBar.showsCancelButton = true
         var cancelButton: UIButton
         for subView in searchBar.subviews[0].subviews {
-            if subView.isKindOfClass(NSClassFromString("UINavigationButton")!) {
+            if subView.isKind(of: NSClassFromString("UINavigationButton")!) {
                 cancelButton = subView as! UIButton
-                cancelButton.setTitle("Cancel".localized, forState: UIControlState.Normal)
+                cancelButton.setTitle("Cancel".localized, for: UIControlState())
             }
         }
         
@@ -43,8 +43,8 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
         searchTableView.delegate = self
         searchTableView.separatorColor = UIColor.TurntLightGray();
         
-        doneButton.setTitle("DONE".localized, forState: UIControlState.Normal)
-        doneButton.frame.size.width = UIScreen.mainScreen().bounds.size.width
+        doneButton.setTitle("DONE".localized, for: UIControlState())
+        doneButton.frame.size.width = UIScreen.main.bounds.size.width
         
         apiRequest.searchFriends { (success, searchFriends, error) -> Void in
             if success {
@@ -53,12 +53,12 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
                 let alreadyAddedFriends = (Account.get(self.accountId)?.friends)!
                 let friendsIds : NSMutableArray = []
                 for friend in alreadyAddedFriends {
-                    friendsIds.addObject(friend.valueForKey("friend_account_id")!.integerValue)
+                    friendsIds.add(friend.value(forKey: "friend_account_id")!.intValue)
                 }
                 
                 var filteredFriends : [JSON] = []
                 for user in (self.friends) {
-                    if (!friendsIds.containsObject(user["id"].int!)) {
+                    if (!friendsIds.contains(user["id"].int!)) {
                         filteredFriends.append(user)
                     }
                 }
@@ -73,28 +73,28 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     //MARK: - Search Bar Delegates
-    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         searchActive = true;
     }
     
-    func searchBarTextDidEndEditing(searchBar: UISearchBar) {
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         searchActive = false;
     }
     
-    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
         searchActive = false;
     }
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchActive = false;
     }
     
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         filtered = friends.filter({ (friend) -> Bool in
             let tmp: NSString = friend["username"].stringValue
-            let range = tmp.rangeOfString(searchText, options: NSStringCompareOptions.CaseInsensitiveSearch)
+            let range = tmp.range(of: searchText, options: NSString.CompareOptions.caseInsensitive)
             return range.location != NSNotFound
         })
         if(filtered.count == 0){
@@ -106,29 +106,29 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     //MARK: - Table View Delegates
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 64
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if(searchActive) {
             return filtered.count
         }
         return friends.count;
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = searchTableView.dequeueReusableCellWithIdentifier("SearchCell") as! SearchFriendsCellView
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = searchTableView.dequeueReusableCell(withIdentifier: "SearchCell") as! SearchFriendsCellView
         cell.delegate = self
-        cell.selectionStyle = UITableViewCellSelectionStyle.None
+        cell.selectionStyle = UITableViewCellSelectionStyle.none
         
         cell.preservesSuperviewLayoutMargins = false
-        cell.separatorInset = UIEdgeInsetsZero
-        cell.layoutMargins = UIEdgeInsetsZero
+        cell.separatorInset = UIEdgeInsets.zero
+        cell.layoutMargins = UIEdgeInsets.zero
         
         //TODO: add logic
         cell.connectionStatusImageView.image = UIImage(named: "GRAY-DOT");
@@ -157,9 +157,9 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
             cell.connectionStatusImageView.image = UIImage(named: "GRAY-DOT")
         }
         
-        if (friendsList[indexPath.row]["image"].rawString()!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 2000) {
+        if (friendsList[indexPath.row]["image"].rawString()!.lengthOfBytes(using: String.Encoding.utf8) > 2000) {
             if let image: String = friendsList[indexPath.row]["image"].string {
-                let imgData: NSData = NSData(base64EncodedString: image, options:NSDataBase64DecodingOptions(rawValue: 0))!
+                let imgData: Data = Data(base64Encoded: image, options:NSData.Base64DecodingOptions(rawValue: 0))!
                 cell.profileImage = UIImage(data: imgData)
             }
         } else {
@@ -169,7 +169,7 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
         return cell;
     }
    
-    func appendFriend(sender: AnyObject) {
+    func appendFriend(_ sender: AnyObject) {
         let button = sender as! UIButton
         let account = Account.get(accountId)
         var friendId = 0
@@ -183,7 +183,7 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
             "target_account_id" : "\(friendId)"
         ]
         
-        doneButton.enabled = false
+        doneButton.isEnabled = false
         apiRequest.sendFriendRequest(requestBody, completionHandler: { (success, sentRequest, userAccount, responseBody, error) -> Void in
             if success {
                 if sentRequest {
@@ -195,7 +195,7 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
                                 Friend.create(friends[i], forAccount: accountToUpdate).save()
                             }
                             accountToUpdate.save()
-                            self.doneButton.enabled = true
+                            self.doneButton.isEnabled = true
                         } else {
                             print("error while updating user friends: \(error)")
                         }
@@ -205,10 +205,10 @@ class SearchViewController: UIViewController, UITableViewDataSource, UITableView
         })
         
         if searchActive {
-            friends.removeAtIndex(friends.indexOf(filtered[button.tag])!)
-            filtered.removeAtIndex(button.tag)
+            friends.remove(at: friends.index(of: filtered[button.tag])!)
+            filtered.remove(at: button.tag)
         } else {
-            friends.removeAtIndex(button.tag)
+            friends.remove(at: button.tag)
         }
         
         searchTableView.reloadData()

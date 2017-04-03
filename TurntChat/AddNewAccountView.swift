@@ -10,7 +10,7 @@ import UIKit
 
 protocol AddNewAccountDelegate {
 
-    func addNewAccount(parentView: AddNewAccountView, inputUsername: String) -> Bool
+    func addNewAccount(_ parentView: AddNewAccountView, inputUsername: String) -> Bool
 }
 
 @IBDesignable
@@ -27,7 +27,7 @@ class AddNewAccountView: UIView, UITextFieldDelegate {
         xibSetup()
         addNewAccountButton.layer.borderWidth = 1
         addNewAccountButton.layer.cornerRadius = 5
-        addNewAccountButton.layer.borderColor = UIColor.whiteColor().CGColor
+        addNewAccountButton.layer.borderColor = UIColor.white.cgColor
         newAccountUsernameField.delegate = self
         view.backgroundColor = UIColor.TurntPink()
     }
@@ -37,30 +37,30 @@ class AddNewAccountView: UIView, UITextFieldDelegate {
         xibSetup()
         addNewAccountButton.layer.borderWidth = 1
         addNewAccountButton.layer.cornerRadius = 5
-        addNewAccountButton.layer.borderColor = UIColor.whiteColor().CGColor
+        addNewAccountButton.layer.borderColor = UIColor.white.cgColor
         newAccountUsernameField.delegate = self
     }
     
     func xibSetup() {
         view = loadViewFromNib()
         view.frame = bounds
-        view.autoresizingMask = [UIViewAutoresizing.FlexibleWidth, UIViewAutoresizing.FlexibleHeight]
+        view.autoresizingMask = [UIViewAutoresizing.flexibleWidth, UIViewAutoresizing.flexibleHeight]
         addSubview(view)
     }
     
     func loadViewFromNib() -> UIView {
-        let bundle = NSBundle(forClass: self.dynamicType)
+        let bundle = Bundle(for: type(of: self))
         let nib = UINib(nibName: "AddNewAccountView", bundle: bundle)
-        let view = nib.instantiateWithOwner(self, options: nil)[0] as! UIView
+        let view = nib.instantiate(withOwner: self, options: nil)[0] as! UIView
         return view
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         newAccountUsernameField.resignFirstResponder()
         return true
     }
     
-    @IBAction func addNewAccountButtonPress(sender: AnyObject) {
+    @IBAction func addNewAccountButtonPress(_ sender: AnyObject) {
         "add new account button pressed"
         if (self.delegate?.addNewAccount(self, inputUsername: newAccountUsernameField.text!) != nil) {
             newAccountUsernameField.resignFirstResponder()

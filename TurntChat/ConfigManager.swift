@@ -26,7 +26,7 @@ class ConfigManager {
     
     
     init(){
-        if let path = NSBundle.mainBundle().pathForResource("ApplicationData", ofType: "plist") {
+        if let path = Bundle.main.path(forResource: "ApplicationData", ofType: "plist") {
             if let data = NSDictionary(contentsOfFile: path) as? Dictionary<String, AnyObject> {
                 self.isDev = data["Development"] as? Bool
                 self.testFriends = (data["TestFriendsSearch"] as? [Dictionary<String, AnyObject>])!

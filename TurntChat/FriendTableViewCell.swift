@@ -9,7 +9,7 @@
 import UIKit
 
 protocol FriendTableViewCellDelegate {
-    func approveFriend(button: UIButton) -> Void
+    func approveFriend(_ button: UIButton) -> Void
 }
 
 @IBDesignable
@@ -63,7 +63,7 @@ class FriendTableViewCell: UITableViewCell {
     var delegate: FriendTableViewCellDelegate?
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String!) {
-        super.init(style: UITableViewCellStyle.Value1, reuseIdentifier: reuseIdentifier)
+        super.init(style: UITableViewCellStyle.value1, reuseIdentifier: reuseIdentifier)
         xibSetup()
         friendProfileImageView.layer.cornerRadius = friendProfileImageView.frame.size.width / 2;
         friendProfileImageView.clipsToBounds = true
@@ -79,18 +79,18 @@ class FriendTableViewCell: UITableViewCell {
     func xibSetup() {
         view = loadViewFromNib()
         view.frame = bounds
-        view.autoresizingMask = [UIViewAutoresizing.FlexibleWidth, UIViewAutoresizing.FlexibleHeight]
+        view.autoresizingMask = [UIViewAutoresizing.flexibleWidth, UIViewAutoresizing.flexibleHeight]
         addSubview(view)
     }
     
     func loadViewFromNib() -> UIView {
-        let bundle = NSBundle(forClass: self.dynamicType)
+        let bundle = Bundle(for: type(of: self))
         let nib = UINib(nibName: "FriendTableCellView", bundle: bundle)
-        let view = nib.instantiateWithOwner(self, options: nil)[0] as! UIView
+        let view = nib.instantiate(withOwner: self, options: nil)[0] as! UIView
         return view
     }
     
-    @IBAction func approveFriendRequest(sender: AnyObject) {
+    @IBAction func approveFriendRequest(_ sender: AnyObject) {
         let button: UIButton = sender as! UIButton
         self.delegate?.approveFriend(button)
     }

@@ -24,8 +24,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
     let imagePicker: UIImagePickerController = UIImagePickerController()
     var searchableSwitch: UISwitch?
     
-    override func viewWillAppear(animated: Bool) {
-        settingsAccountView.frame.size.width = UIScreen.mainScreen().bounds.width
+    override func viewWillAppear(_ animated: Bool) {
+        settingsAccountView.frame.size.width = UIScreen.main.bounds.width
         
         let accountViewFrame: CGRect = CGRect(
             x: 0,
@@ -38,15 +38,15 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
         accountView.view.backgroundColor = UIColor.TurntPink()
         accountView.titleLabel.text = account?.username
         
-        let tapGestureRecognizer = UITapGestureRecognizer(target:self, action:Selector("imageTapped:"))
+        let tapGestureRecognizer = UITapGestureRecognizer(target:self, action:#selector(SettingsViewController.imageTapped(_:)))
         accountView.accountImage.addGestureRecognizer(tapGestureRecognizer)
-        accountView.accountImage.userInteractionEnabled = !account!.isImageAddedByUser()
+        accountView.accountImage.isUserInteractionEnabled = !account!.isImageAddedByUser()
         accountView.image = account?.getImage()
         
         settingsAccountView.addSubview(accountView)
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         if (deleting == true) {
             print("deleting account")
         } else {
@@ -58,30 +58,30 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
     override func viewDidLoad() {
         super.viewDidLoad()
         account = Account.get(accountId)
-        let contentSize = UIScreen.mainScreen().bounds
-        searchableSwitch = UISwitch.init(frame: CGRectMake(contentSize.width - 60, 6, 0, 0))
+        let contentSize = UIScreen.main.bounds
+        searchableSwitch = UISwitch.init(frame: CGRect(x: contentSize.width - 60, y: 6, width: 0, height: 0))
         if(account!.visible.boolValue) {
             searchableSwitch?.setOn(true, animated: true)
         } else {
             searchableSwitch?.setOn(false, animated: true)
         }
-        searchableSwitch!.addTarget(self, action: Selector("stateChanged:"), forControlEvents: UIControlEvents.ValueChanged)
+        searchableSwitch!.addTarget(self, action: #selector(SettingsViewController.stateChanged(_:)), for: UIControlEvents.valueChanged)
         
-        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: nil, action: nil)
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.plain, target: nil, action: nil)
         
         settingsTableView.delegate = self
         settingsTableView.dataSource = self
         settingsTableView.backgroundColor = UIColor.TurntLightGray()
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "requestTimeout", name: RequestNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(SettingsViewController.requestTimeout), name: NSNotification.Name(rawValue: RequestNotification), object: nil)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-    func stateChanged(switchState: UISwitch) {
-        if (searchableSwitch!.on) {
+    func stateChanged(_ switchState: UISwitch) {
+        if (searchableSwitch!.isOn) {
             print("switch on")
             account!.visible = 1
         } else {
@@ -91,26 +91,26 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     //MARK: - Table View Delegate methods
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 4
     }
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 48
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = settingsTableView.dequeueReusableCellWithIdentifier("SettingsCell", forIndexPath: indexPath) as UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = settingsTableView.dequeueReusableCell(withIdentifier: "SettingsCell", for: indexPath) as UITableViewCell
         
-        cell.selectionStyle = UITableViewCellSelectionStyle.None
-        cell.textLabel?.font = UIFont.systemFontOfSize(15)
+        cell.selectionStyle = UITableViewCellSelectionStyle.none
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 15)
         let cellContentFrame = cell.contentView.frame
         let margin: CGFloat = 15
-        let passwordTextFieldFrame = CGRectMake(margin, 0, cellContentFrame.width - margin, cellContentFrame.height)
+        let passwordTextFieldFrame = CGRect(x: margin, y: 0, width: cellContentFrame.width - margin, height: cellContentFrame.height)
         
         switch (indexPath.row) {
         case 0:
@@ -122,13 +122,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
             break
         case 2:
             passwordTextFiled = UITextField.init(frame: passwordTextFieldFrame)
-            passwordTextFiled.font = UIFont.systemFontOfSize(15)
+            passwordTextFiled.font = UIFont.systemFont(ofSize: 15)
             if (account!.password != "") {
                 passwordTextFiled.placeholder = "●●●●●●●"
             } else {
                 passwordTextFiled.placeholder = "Set password to claim username"
             }
-            passwordTextFiled.secureTextEntry = true
+            passwordTextFiled.isSecureTextEntry = true
             passwordTextFiled.tintColor = UIColor.TurntPink()
             passwordTextFiled.delegate = self
             cell.contentView.addSubview(passwordTextFiled)
@@ -144,7 +144,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
         return cell
     }
 
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch (indexPath.row) {
         case 0:
             imageTapped(self)
@@ -165,7 +165,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
             "password" : "\(account!.password)",
             "active" : "\(account!.active)",
             "visible" : "\(account!.visible)",
-            "image" : account!.image.base64EncodedStringWithOptions([])
+            "image" : account!.image.base64EncodedString(options: [])
         ]
         
         apiRequest.updateAccount(requestBody) { (success, accountUpdated, userAccounts, responseBody, error) -> Void in
@@ -179,23 +179,23 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
         }
     }
     
-    func showAlert(title: String? ,content: String?){
+    func showAlert(_ title: String? ,content: String?){
         let alertController = UIAlertController(
             title: title,
             message: content,
-            preferredStyle: UIAlertControllerStyle.Alert
+            preferredStyle: UIAlertControllerStyle.alert
         )
-        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default,handler: nil))
-        self.presentViewController(alertController, animated: true, completion: nil)
+        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default,handler: nil))
+        self.present(alertController, animated: true, completion: nil)
     }
     
     func showDeleteConfirmationAlert() {
         let alertController = UIAlertController(
             title: "Are you sure?".localized,
             message: "This account will be deleted permanently...".localized,
-            preferredStyle: UIAlertControllerStyle.Alert
+            preferredStyle: UIAlertControllerStyle.alert
         )
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default,handler: {(action : UIAlertAction!) in
+        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: {(action : UIAlertAction!) in
             let requestBody: [String: String] = [
                 "account_id": "\(self.account!.id)"
             ]
@@ -210,17 +210,17 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
                         print("success with deleting account")
                         if (self.accounts.count > 0) {
                             print("delete1")
-                            self.navigationController?.popToRootViewControllerAnimated(true)
+                            self.navigationController?.popToRootViewController(animated: true)
                         } else {
                             print("delete2")
-                            self.presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+                            self.presentingViewController?.dismiss(animated: true, completion: nil)
                         }
                     }
                 }
             })
         }))
-        alertController.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Default, handler: nil))
-        self.presentViewController(alertController, animated: true, completion: nil)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
+        self.present(alertController, animated: true, completion: nil)
     }
     
     func requestTimeout(){
@@ -228,7 +228,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     // MARK: - Text field delegate functions
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print("password: \(passwordTextFiled.text!)")
         if passwordTextFiled.text!.characters.count > 5 {
             self.account!.password = passwordTextFiled.text!
@@ -242,8 +242,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
         return true
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
-        self.dismissViewControllerAnimated(true, completion: { () -> Void in
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [AnyHashable: Any]!) {
+        self.dismiss(animated: true, completion: { () -> Void in
             self.account!.image = UIImageJPEGRepresentation(image, 0.5)!
             self.account!.save()
             self.viewWillAppear(true)
@@ -251,19 +251,19 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UINavigatio
         })
     }
     
-    func imageTapped(img: AnyObject)
+    func imageTapped(_ img: AnyObject)
     {
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
-        imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+        imagePicker.sourceType = UIImagePickerControllerSourceType.savedPhotosAlbum
         imagePicker.navigationBar.barTintColor = UIColor.TurntPink()
-        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-        imagePicker.navigationBar.tintColor = UIColor.whiteColor()
-        imagePicker.navigationBar.barStyle = .Black
-        imagePicker.navigationBar.translucent = false
+        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
+        imagePicker.navigationBar.tintColor = UIColor.white
+        imagePicker.navigationBar.barStyle = .black
+        imagePicker.navigationBar.isTranslucent = false
         
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum){
-            self.presentViewController(imagePicker, animated: true, completion: nil)
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum){
+            self.present(imagePicker, animated: true, completion: nil)
         }
     }
 }

@@ -11,6 +11,6 @@ import Foundation
 //This extension enables to localize strings by adding ".localized" after the actual string (key) in the code.
 extension String {
     var localized: String {
-        return NSLocalizedString(self, tableName: nil, bundle: NSBundle.mainBundle(), value: "", comment: "")
+        return NSLocalizedString(self, tableName: nil, bundle: Bundle.main, value: "", comment: "")
     }
 }

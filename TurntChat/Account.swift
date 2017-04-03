@@ -14,25 +14,25 @@ import SwiftyJSON
 class Account: NSManagedObject {
     
     @NSManaged var active: NSNumber
-    @NSManaged var activeated_on: NSDate
-    @NSManaged var deactivated_on: NSDate
+    @NSManaged var activeated_on: Date
+    @NSManaged var deactivated_on: Date
     @NSManaged var defaultAccount: NSNumber
     @NSManaged var id: NSNumber
     @NSManaged var password: String
-    @NSManaged var image: NSData
+    @NSManaged var image: Data
     @NSManaged var username: String
     @NSManaged var friends: NSSet
     @NSManaged var visible: NSNumber
     @NSManaged var user_id: NSNumber
     
     static let entityName: String = "Account"
-    static let context = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    static let context = (UIApplication.shared.delegate as! AppDelegate).managedObjectContext
     static let apiRequest = ApiRequest()
     
     var profileImage: UIImage? {
         get {
             var image: UIImage? = UIImage(named: "AddPhoto")
-            if self.image.length > 0 {
+            if self.image.count > 0 {
                 image = UIImage(data: self.image)
             }
             return image
@@ -46,8 +46,8 @@ class Account: NSManagedObject {
     //MARK: Static functions
     
     //Create record in context and return new entity
-    class func create(username: String, image: NSData?) -> Account {
-        let newAccount = NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context!) as! Account
+    class func create(_ username: String, image: Data?) -> Account {
+        let newAccount = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context!) as! Account
         newAccount.username = username
         if let img = image {
             newAccount.image = img
@@ -56,8 +56,8 @@ class Account: NSManagedObject {
     }
     
     //Create record in remote db and sync redcords with local db
-    class func create(accountData: JSON, completed: (error: String!) -> Void)  {
-        let newAccount = NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context!) as! Account
+    class func create(_ accountData: JSON, completed: (_ error: String?) -> Void)  {
+        let newAccount = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context!) as! Account
         newAccount.id = accountData["id"].intValue
         newAccount.username = accountData["username"].stringValue
         newAccount.visible = accountData["visible"].boolValue
@@ -67,14 +67,14 @@ class Account: NSManagedObject {
     }
     
     //Get record by id
-    class func get(id: NSNumber) -> Account? {
+    class func get(_ id: NSNumber) -> Account? {
         
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let predicate = NSPredicate(format: "id == %@", id)
         var accounts: [Account] = []
         
         fetchRequest.predicate = predicate
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
             accounts = fetchResults
         }
         
@@ -88,12 +88,12 @@ class Account: NSManagedObject {
     
     //Get all records
     class func all() -> [Account] {
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         var accounts: [Account] = []
         
         fetchRequest.sortDescriptors = [sortDescriptor]
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
             accounts = fetchResults
         }
         
@@ -101,13 +101,13 @@ class Account: NSManagedObject {
     }
     
     //Find record by username
-    class func findByUsername(username: String) -> Account? {
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+    class func findByUsername(_ username: String) -> Account? {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let predicate = NSPredicate(format: "username == %@", username)
         var accounts: [Account] = []
         
         fetchRequest.predicate = predicate
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
             accounts = fetchResults
         }
         
@@ -123,9 +123,9 @@ class Account: NSManagedObject {
     class func deleteAll() {
         var accounts = all()
         for account in accounts {
-            context!.deleteObject(account as NSManagedObject)
+            context!.delete(account as NSManagedObject)
         }
-        accounts.removeAll(keepCapacity: false)
+        accounts.removeAll(keepingCapacity: false)
         do {
             try context!.save()
         } catch _ {
@@ -134,25 +134,25 @@ class Account: NSManagedObject {
     
     //Get last inserted id
     class func lastInsertedId() -> NSNumber {
-        let fetchRequest = NSFetchRequest(entityName: entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: false)
         var accounts: [Account] = []
         
         fetchRequest.sortDescriptors = [sortDescriptor]
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
             accounts = fetchResults
         }
         
         return accounts[0].id
     }
     
-    class func syncFriendsForAccount(userAccount: JSON) {
+    class func syncFriendsForAccount(_ userAccount: JSON) {
         
-        let fetchRequest = NSFetchRequest(entityName: Account.entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Account.entityName)
         let predicate = NSPredicate(format: "id == \(userAccount["id"])")
         fetchRequest.predicate = predicate
         
-        if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+        if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
             let oldAccount = fetchResults[0]
             oldAccount.friends = []
             for (_, friend): (String, JSON) in userAccount["friends"] {
@@ -161,11 +161,11 @@ class Account: NSManagedObject {
         }
     }
     
-    class func syncRecords(userAccounts: JSON) {
+    class func syncRecords(_ userAccounts: JSON) {
         Account.deleteAll()
         
 //        print("sync records user Accounts: \(userAccounts)")
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         
         for (_, account): (String, JSON) in userAccounts {
@@ -175,16 +175,16 @@ class Account: NSManagedObject {
             newAccount.user_id = account["user_id"].intValue
             newAccount.visible = account["visible"].boolValue
             newAccount.setDefault(true)
-            newAccount.activeated_on = dateFormatter.dateFromString(account["activated_on"].stringValue)!
+            newAccount.activeated_on = dateFormatter.date(from: account["activated_on"].stringValue)!
             
-            if (account["image"].rawString()!.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 2000) {
+            if (account["image"].rawString()!.lengthOfBytes(using: String.Encoding.utf8) > 2000) {
 //                newAccount.isImageAddedByUser = true
                 if let image: String = account["image"].string {
-                    let imgData: NSData = NSData(base64EncodedString: image, options:NSDataBase64DecodingOptions(rawValue: 0))!
+                    let imgData: Data = Data(base64Encoded: image, options:NSData.Base64DecodingOptions(rawValue: 0))!
                     newAccount.image = imgData
                 }
             } else {
-                newAccount.image = NSData.init()
+                newAccount.image = Data.init()
             }
     
             newAccount.save()
@@ -210,7 +210,7 @@ class Account: NSManagedObject {
     
     func remove() {
         let context = Account.context
-        context!.deleteObject(self)
+        context!.delete(self)
 
         do {
             try context!.save()
@@ -225,7 +225,7 @@ class Account: NSManagedObject {
         let friends = self.friends.allObjects
         for friend in friends as! [Friend] {
             if friend.poked_me as Bool {
-                count++
+                count += 1
             }
         }
         return count
@@ -239,7 +239,7 @@ class Account: NSManagedObject {
     }
     
     func isImageAddedByUser() -> Bool {
-        if self.image.length > 0 {
+        if self.image.count > 0 {
             return true
         } else {
             return false
@@ -248,7 +248,7 @@ class Account: NSManagedObject {
     
     func getImage() -> UIImage? {
         var image: UIImage? = UIImage(named: "AddPhoto")
-        if self.image.length > 0 {
+        if self.image.count > 0 {
             image = UIImage(data: self.image)
         }
         if let _ = image {
@@ -261,7 +261,7 @@ class Account: NSManagedObject {
     
     func getChatImage() -> UIImage? {
         var image: UIImage? = UIImage(named: "profile_placeholder")
-        if self.image.length > 0 {
+        if self.image.count > 0 {
             image = UIImage(data: self.image)
         }
         if let _ = image {
@@ -276,14 +276,14 @@ class Account: NSManagedObject {
 //        self.image = UIImagePNGRepresentation(image)!
 //    }
     
-    func setDefault(on: Bool) {
+    func setDefault(_ on: Bool) {
         let context = Account.context
-        let fetchRequest = NSFetchRequest(entityName: Account.entityName)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Account.entityName)
         let predicate = NSPredicate(format: "defaultAccount == 1")
         fetchRequest.predicate = predicate
         
         if on {
-            if let fetchResults = (try? context!.executeFetchRequest(fetchRequest)) as? [Account] {
+            if let fetchResults = (try? context!.fetch(fetchRequest)) as? [Account] {
                 if fetchResults.count > 0 {
                     let oldDefaultAccount: Account = fetchResults[0]
                     oldDefaultAccount.defaultAccount = false

@@ -36,7 +36,7 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     let imagePicker: UIImagePickerController = UIImagePickerController()
     var photoMsgView: UIImageView!
     var photo: UIImage!
-    var videoUrl: NSURL!
+    var videoUrl: URL!
     let playerController = AVPlayerViewController()
     var displayingMediaMode: Bool = false
 
@@ -56,11 +56,11 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         configureView()
         getChannelId()
         
-        socket = WebSocket(url: NSURL(scheme: "http", host:ConfigManager.sharedInstance.WebSocketUrl!, path: "/chat/\(channelId!)/\(accountId!)")!)
+        socket = WebSocket(url: (NSURL(scheme: "http", host:ConfigManager.sharedInstance.WebSocketUrl!, path: "/chat/\(channelId!)/\(accountId!)") as? URL)!)
         socket!.delegate = self
         socket!.connect()
         
-        progressView.hidden = true
+        progressView.isHidden = true
         progressView.setProgress(0, animated: true)
     }
     
@@ -68,7 +68,7 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         super.didReceiveMemoryWarning()
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         if (!displayingMediaMode) {
             self.socket!.disconnect()
         } else {
@@ -105,7 +105,7 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     }
     
     //MARK: UITextView delegate methods
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         let maxHeight: CGFloat = 180.0
         let lineHeight = textView.font!.lineHeight
         let contentHeight = textView.contentSize.height
@@ -119,7 +119,7 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         return true
     }
     
-    func textViewDidChangeSelection(textView: UITextView) {
+    func textViewDidChangeSelection(_ textView: UITextView) {
         let maxHeight: CGFloat = 180.0
         let lineHeight = textView.font!.lineHeight
         let contentHeight = textView.contentSize.height
@@ -130,81 +130,81 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     }
     
     //MARK: websocket delegate methods
-    func websocketDidConnect(socket: WebSocket) {
+    func websocketDidConnect(_ socket: WebSocket) {
         print("Chat connected \(socket)")
     }
     
-    func websocketDidDisconnect(socket: WebSocket, error: NSError?) {
+    func websocketDidDisconnect(_ socket: WebSocket, error: NSError?) {
         print("Chat disconnected \(error?.localizedDescription)")
     }
     
-    func websocketDidReceiveData(socket: WebSocket, data: NSData) {
+    func websocketDidReceiveData(_ socket: WebSocket, data: Data) {
         print("Chat data transfer")
     }
     
-    func websocketDidReceiveMessage(socket: WebSocket, text: String) {
-        if let dataFromString = text.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false) {
+    func websocketDidReceiveMessage(_ socket: WebSocket, text: String) {
+        if let dataFromString = text.data(using: String.Encoding.utf8, allowLossyConversion: false) {
             let json = JSON(data: dataFromString)
             print("\(json["type"]) received")
             
             if json["type"].stringValue == "status" {
                 print("Update user status: \(json)")
                 if json["online"].stringValue == "true" {
-                    statusView.hidden = false
-                    sendButton.setImage(UIImage(named: "SEND"), forState: UIControlState.Normal)
+                    statusView.isHidden = false
+                    sendButton.setImage(UIImage(named: "SEND"), for: UIControlState())
                     sendButton.tag = 1
-                    sendMediaButton.setImage(UIImage(named: "SEND-MEDIA"), forState: UIControlState.Normal)
-                    sendMediaButton.enabled = true
+                    sendMediaButton.setImage(UIImage(named: "SEND-MEDIA"), for: UIControlState())
+                    sendMediaButton.isEnabled = true
                 } else {
-                    statusView.hidden = true
-                    sendButton.setImage(UIImage(named: "POKE-BUTTON"), forState: UIControlState.Normal)
+                    statusView.isHidden = true
+                    sendButton.setImage(UIImage(named: "POKE-BUTTON"), for: UIControlState())
                     sendButton.tag = 0
-                    sendMediaButton.setImage(UIImage(named: "SEND-MEDIA-GRAY"), forState: UIControlState.Normal)
-                    sendMediaButton.enabled = false
-                    incomingMediaButton.enabled = false
+                    sendMediaButton.setImage(UIImage(named: "SEND-MEDIA-GRAY"), for: UIControlState())
+                    sendMediaButton.isEnabled = false
+                    incomingMediaButton.isEnabled = false
                 }
             } else if json["type"].stringValue == "text" {
                 incomingMsgView.text = json["content"].stringValue
-                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), forState: UIControlState.Normal)
-                incomingMediaButton.enabled = false
+                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), for: UIControlState())
+                incomingMediaButton.isEnabled = false
                 }
               else if json["type"].stringValue == "image" {
                 if let image: String = json["content"].string {
-                    let imgData: NSData = NSData(base64EncodedString: image, options:NSDataBase64DecodingOptions(rawValue: 0))!
+                    let imgData: Data = Data(base64Encoded: image, options:NSData.Base64DecodingOptions(rawValue: 0))!
                     self.photo = UIImage(data: imgData)!
                 }
-                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO"), forState: UIControlState.Normal)
+                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO"), for: UIControlState())
                 incomingMediaButton.tag = 0
-                incomingMediaButton.enabled = true
+                incomingMediaButton.isEnabled = true
             }
             else if json["type"].stringValue == "video" {
                 if let video: String = json["content"].string {
-                    let videoData: NSData = NSData(base64EncodedString: video, options:NSDataBase64DecodingOptions(rawValue: 0))!
-                    let writePath: NSURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent("receivedMovie.mov")
-                    videoData.writeToURL(writePath, atomically: true)
+                    let videoData: Data = Data(base64Encoded: video, options:NSData.Base64DecodingOptions(rawValue: 0))!
+                    let writePath: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("receivedMovie.mov")
+                    try? videoData.write(to: writePath, options: [.atomic])
                     self.videoUrl = writePath
                 }
-                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO"), forState: UIControlState.Normal)
+                incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO"), for: UIControlState())
                 incomingMediaButton.tag = 1
-                incomingMediaButton.enabled = true
+                incomingMediaButton.isEnabled = true
             }
         }
     }
     
     //MARK: buttons actions
-    func cleanButtonPressed(sender: UIButton) {
+    func cleanButtonPressed(_ sender: UIButton) {
         print("cleanButtonPressed")
         outcomingMsgView.text! = ""
         incomingMsgView.text! = ""
         enterMsgTextView.text! = ""
     }
     
-    func sendButtonPressed(sender: UIButton) {
+    func sendButtonPressed(_ sender: UIButton) {
         print("send/poke ButtonPressed")
         if sender.tag == 1 {
             let dict = [ "content": "\(enterMsgTextView.text!)", "type" : "text"  ]
-            let data = try? NSJSONSerialization.dataWithJSONObject(dict, options: [])
-            let string = NSString(data: data!, encoding: NSUTF8StringEncoding)
+            let data = try? JSONSerialization.data(withJSONObject: dict, options: [])
+            let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
             socket!.writeString(string as! String)
             outcomingMsgView.text = enterMsgTextView.text!
             incomingMsgView.text = ""
@@ -226,13 +226,13 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         }
     }
     
-    func incomingMediaButtonPressed(sender: UIButton) {
+    func incomingMediaButtonPressed(_ sender: UIButton) {
         displayingMediaMode = true
         print("incomingMediaButtonPressed")
         if sender.tag == 0 {
             self.showPhotoMsg()
-            let dispatchTime: dispatch_time_t = dispatch_time(DISPATCH_TIME_NOW, Int64(4 * Double(NSEC_PER_SEC)))
-            dispatch_after(dispatchTime, dispatch_get_main_queue(), {
+            let dispatchTime: DispatchTime = DispatchTime.now() + Double(Int64(4 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: {
                 self.hidePhotoMsg()
             })
         } else if sender.tag == 1 {
@@ -240,93 +240,93 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         }
     }
     
-    func sendMediaButtonPressed(sender: UIButton) {
+    func sendMediaButtonPressed(_ sender: UIButton) {
         displayingMediaMode = true
         print("sendMediaButtonPressed")
         presentActionSheet()
     }
 
     func presentActionSheet() {
-        let actionSheet: UIAlertController = UIAlertController(title:nil, message:nil, preferredStyle:UIAlertControllerStyle.ActionSheet)
-        actionSheet.addAction(UIAlertAction(title:"Choose photo from library".localized, style:UIAlertActionStyle.Default, handler:{ action in
+        let actionSheet: UIAlertController = UIAlertController(title:nil, message:nil, preferredStyle:UIAlertControllerStyle.actionSheet)
+        actionSheet.addAction(UIAlertAction(title:"Choose photo from library".localized, style:UIAlertActionStyle.default, handler:{ action in
             self.choosePhotoFromLibrery()
         }))
-        actionSheet.addAction(UIAlertAction(title:"Take photo".localized, style:UIAlertActionStyle.Default, handler:{ action in
+        actionSheet.addAction(UIAlertAction(title:"Take photo".localized, style:UIAlertActionStyle.default, handler:{ action in
             self.takePhoto()
         }))
-        actionSheet.addAction(UIAlertAction(title:"Cancel".localized, style:UIAlertActionStyle.Cancel, handler:nil))
-        presentViewController(actionSheet, animated:true, completion:nil)
+        actionSheet.addAction(UIAlertAction(title:"Cancel".localized, style:UIAlertActionStyle.cancel, handler:nil))
+        present(actionSheet, animated:true, completion:nil)
     }
     
     func choosePhotoFromLibrery() {
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
-        imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+        imagePicker.sourceType = UIImagePickerControllerSourceType.savedPhotosAlbum
         imagePicker.navigationBar.barTintColor = UIColor.TurntPink()
-        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-        imagePicker.navigationBar.tintColor = UIColor.whiteColor()
-        imagePicker.navigationBar.barStyle = .Black
-        imagePicker.navigationBar.translucent = false
+        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
+        imagePicker.navigationBar.tintColor = UIColor.white
+        imagePicker.navigationBar.barStyle = .black
+        imagePicker.navigationBar.isTranslucent = false
         
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum){
-            self.presentViewController(imagePicker, animated: true, completion: nil)
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum){
+            self.present(imagePicker, animated: true, completion: nil)
         }
     }
 
     func takePhoto() {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) {
             imagePicker.delegate = self
-            imagePicker.sourceType = .Camera
-            let availableMediaTypes = UIImagePickerController.availableMediaTypesForSourceType(.Camera)
+            imagePicker.sourceType = .camera
+            let availableMediaTypes = UIImagePickerController.availableMediaTypes(for: .camera)
             imagePicker.mediaTypes = availableMediaTypes!
             imagePicker.videoMaximumDuration = 10.0
-            self.presentViewController(imagePicker, animated: true, completion: nil)
+            self.present(imagePicker, animated: true, completion: nil)
         } else {
             print("camera not avaliable")
         }
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let mediaType = info["UIImagePickerControllerMediaType"]!
         var dict: [String: String] = [:]
         
-        if (mediaType.isEqual("public.movie")) {
+        if ((mediaType as AnyObject).isEqual("public.movie")) {
             //writing video to socket as string
-            let videoUrl = info["UIImagePickerControllerMediaURL"] as! NSURL
-            let video: NSData = NSData(contentsOfURL: videoUrl)!
-            let videoAsString: String = video.base64EncodedStringWithOptions([])
+            let videoUrl = info["UIImagePickerControllerMediaURL"] as! URL
+            let video: Data = try! Data(contentsOf: videoUrl)
+            let videoAsString: String = video.base64EncodedString(options: [])
             dict = ["content": "\(videoAsString)", "type" : "video"]
         }
-        else if (mediaType.isEqual("public.image")) {
+        else if ((mediaType as AnyObject).isEqual("public.image")) {
             //writing image to socket as string
             let image: UIImage = info["UIImagePickerControllerOriginalImage"] as! UIImage
-            let imageAsString: String = UIImageJPEGRepresentation(image, 0.1)!.base64EncodedStringWithOptions([])
+            let imageAsString: String = UIImageJPEGRepresentation(image, 0.1)!.base64EncodedString(options: [])
             dict = ["content": "\(imageAsString)", "type" : "image"]
         }
         
-        let data = try? NSJSONSerialization.dataWithJSONObject(dict, options: [])
-        let string = NSString(data: data!, encoding: NSUTF8StringEncoding)
+        let data = try? JSONSerialization.data(withJSONObject: dict, options: [])
+        let string = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
         self.socket!.writeString(string as! String)
         
         //progress bar of sending (now fake)
-        self.progressView.hidden = false
+        self.progressView.isHidden = false
         self.counter = 0
         for _ in 0..<100 {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
+            DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.background).async(execute: {
                 sleep(2)
-                dispatch_async(dispatch_get_main_queue(), {
+                DispatchQueue.main.async(execute: {
                     if self.counter == 99 {
-                        self.progressView.hidden = true
+                        self.progressView.isHidden = true
                     } else {
-                        self.counter++
+                        self.counter += 1
                     }
                     return
                 })
             })
         }
         
-        self.sendMediaButton.enabled = true
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.sendMediaButton.isEnabled = true
+        self.dismiss(animated: true, completion: nil)
         self.enterMsgTextView.becomeFirstResponder()
         displayingMediaMode = false
     }
@@ -334,22 +334,22 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     //MARK: view configuration
     func configureNavigationBarView() {
         let friend = Friend.get(friendId!)
-        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: nil, action: nil)
-        let cleanButton = UIBarButtonItem(title: "Clear".localized, style: UIBarButtonItemStyle.Plain, target: self, action:"cleanButtonPressed:")
-        cleanButton.setTitleTextAttributes([NSFontAttributeName: UIFont.systemFontOfSize(15)], forState: UIControlState.Normal)
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.plain, target: nil, action: nil)
+        let cleanButton = UIBarButtonItem(title: "Clear".localized, style: UIBarButtonItemStyle.plain, target: self, action:#selector(ChatViewController.cleanButtonPressed(_:)))
+        cleanButton.setTitleTextAttributes([NSFontAttributeName: UIFont.systemFont(ofSize: 15)], for: UIControlState())
         self.navigationItem.rightBarButtonItem = cleanButton
         
         let friendUsername: NSString = "\(friend!.username)"
-        let friendUsernameSize = friendUsername.sizeWithAttributes([NSFontAttributeName: UIFont.boldSystemFontOfSize(18)])
+        let friendUsernameSize = friendUsername.size(attributes: [NSFontAttributeName: UIFont.boldSystemFont(ofSize: 18)])
         
-        let navBarTitleView = UIView.init(frame: CGRectMake(0, 0, friendUsernameSize.width + 15, friendUsernameSize.height))
+        let navBarTitleView = UIView.init(frame: CGRect(x: 0, y: 0, width: friendUsernameSize.width + 15, height: friendUsernameSize.height))
         
-        let usernameLabel = UILabel.init(frame: CGRectMake(10, 0, friendUsernameSize.width, friendUsernameSize.height))
+        let usernameLabel = UILabel.init(frame: CGRect(x: 10, y: 0, width: friendUsernameSize.width, height: friendUsernameSize.height))
         usernameLabel.text = "\(friend!.username)"
         usernameLabel.textColor = UIColor.TurntWhite()
-        usernameLabel.font = UIFont.boldSystemFontOfSize(18)
+        usernameLabel.font = UIFont.boldSystemFont(ofSize: 18)
         
-        statusView = UIImageView.init(frame: CGRectMake(0, friendUsernameSize.height/2 - 4, 8, 8))
+        statusView = UIImageView.init(frame: CGRect(x: 0, y: friendUsernameSize.height/2 - 4, width: 8, height: 8))
         statusView.backgroundColor = UIColor.TurntGreenLumo()
         statusView.layer.cornerRadius = 4
         statusView.clipsToBounds = true
@@ -361,8 +361,8 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
     }
     
     func configureView() {
-        let screenWidth = UIScreen.mainScreen().bounds.width
-        let screenHeight = UIScreen.mainScreen().bounds.height
+        let screenWidth = UIScreen.main.bounds.width
+        let screenHeight = UIScreen.main.bounds.height
         let statusBarHeight: CGFloat = 20.0 //UIApplication.sharedApplication().statusBarFrame.size.height
         let navigationBarHeight: CGFloat = 44.0 //self.navigationController!.navigationBar.frame.size.height
         let keyboardHeight: CGFloat = 216.0
@@ -382,99 +382,99 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         }
         
 //progressView
-        progressView = UIProgressView.init(frame: CGRectMake(0, 0, screenWidth, 10))
+        progressView = UIProgressView.init(frame: CGRect(x: 0, y: 0, width: screenWidth, height: 10))
         progressView.progressTintColor = UIColor.TurntGreenLumo()
-        progressView.backgroundColor = UIColor.clearColor()
+        progressView.backgroundColor = UIColor.clear
         self.view.addSubview(progressView)
         
 //input Container
-        inputContainerView = UIView.init(frame: CGRectMake(0, inputContainerViewY, screenWidth, inputContainerViewHeight))
+        inputContainerView = UIView.init(frame: CGRect(x: 0, y: inputContainerViewY, width: screenWidth, height: inputContainerViewHeight))
         inputContainerView.backgroundColor = UIColor.TurntWhite()
         self.view.addSubview(inputContainerView)
         
     //enterMsg
-        enterMsgTextView = UITextField.init(frame: CGRectMake(margin, enterMsgTextViewHeight/2, screenWidth - pokeButtonWidth - 3*margin, enterMsgTextViewHeight))
+        enterMsgTextView = UITextField.init(frame: CGRect(x: margin, y: enterMsgTextViewHeight/2, width: screenWidth - pokeButtonWidth - 3*margin, height: enterMsgTextViewHeight))
         enterMsgTextView.backgroundColor = UIColor.TurntWhite()
-        enterMsgTextView.font = UIFont.systemFontOfSize(15)
+        enterMsgTextView.font = UIFont.systemFont(ofSize: 15)
         enterMsgTextView.placeholder = "Enter message"
         enterMsgTextView.becomeFirstResponder()
         inputContainerView.addSubview(enterMsgTextView)
         
     //pokeButton
-        sendButton = UIButton.init(frame: CGRectMake(enterMsgTextView.frame.size.width + 2*margin, (inputContainerViewHeight - pokeButtonHeight)/2, pokeButtonWidth, pokeButtonHeight))
-        sendButton.setBackgroundImage(UIImage(named: "POKE-BUTTON"), forState: UIControlState.Normal)
-        sendButton.addTarget(self, action: "sendButtonPressed:", forControlEvents: UIControlEvents.TouchUpInside)
+        sendButton = UIButton.init(frame: CGRect(x: enterMsgTextView.frame.size.width + 2*margin, y: (inputContainerViewHeight - pokeButtonHeight)/2, width: pokeButtonWidth, height: pokeButtonHeight))
+        sendButton.setBackgroundImage(UIImage(named: "POKE-BUTTON"), for: UIControlState())
+        sendButton.addTarget(self, action: #selector(ChatViewController.sendButtonPressed(_:)), for: UIControlEvents.touchUpInside)
         inputContainerView.addSubview(sendButton)
         
 //msg Containers
     //outcoming container
-        outcomingMsgContiner = UIView.init(frame: CGRectMake(margin, halfFreeScreenHeight + margin, screenWidth - 2*margin, halfFreeScreenHeight - 2*margin))
+        outcomingMsgContiner = UIView.init(frame: CGRect(x: margin, y: halfFreeScreenHeight + margin, width: screenWidth - 2*margin, height: halfFreeScreenHeight - 2*margin))
         self.view.addSubview(outcomingMsgContiner)
         
         //user image view
-        userImageView = UIImageView.init(frame: CGRectMake(outcomingMsgContiner.frame.size.width - squareElementSide, 0, squareElementSide, squareElementSide))
+        userImageView = UIImageView.init(frame: CGRect(x: outcomingMsgContiner.frame.size.width - squareElementSide, y: 0, width: squareElementSide, height: squareElementSide))
         userImageView.image = Account.get(accountId!)?.getChatImage()
         userImageView.layer.cornerRadius = 4.0
         userImageView.clipsToBounds = true
         outcomingMsgContiner.addSubview(userImageView)
         
         //send media button
-        sendMediaButton = UIButton.init(frame: CGRectMake(outcomingMsgContiner.frame.size.width - squareElementSide, squareElementSide + smallMargin, squareElementSide, squareElementSide))
-        sendMediaButton.setBackgroundImage(UIImage(named: "SEND-MEDIA-GRAY"), forState: UIControlState.Normal)
-        sendMediaButton.addTarget(self, action: "sendMediaButtonPressed:", forControlEvents: UIControlEvents.TouchUpInside)
+        sendMediaButton = UIButton.init(frame: CGRect(x: outcomingMsgContiner.frame.size.width - squareElementSide, y: squareElementSide + smallMargin, width: squareElementSide, height: squareElementSide))
+        sendMediaButton.setBackgroundImage(UIImage(named: "SEND-MEDIA-GRAY"), for: UIControlState())
+        sendMediaButton.addTarget(self, action: #selector(ChatViewController.sendMediaButtonPressed(_:)), for: UIControlEvents.touchUpInside)
         outcomingMsgContiner.addSubview(sendMediaButton)
         
         //outcoming msg view
-        outcomingMsgView = UITextView.init(frame: CGRectMake(0, 0, outcomingMsgContiner.frame.size.width - squareElementSide - smallMargin, halfFreeScreenHeight - 2*margin))
+        outcomingMsgView = UITextView.init(frame: CGRect(x: 0, y: 0, width: outcomingMsgContiner.frame.size.width - squareElementSide - smallMargin, height: halfFreeScreenHeight - 2*margin))
         outcomingMsgView.backgroundColor = UIColor.TurntWhite()
-        outcomingMsgView.font = UIFont.systemFontOfSize(15.0)
+        outcomingMsgView.font = UIFont.systemFont(ofSize: 15.0)
         outcomingMsgView.textColor = UIColor.TurntChatTextColor()
-        outcomingMsgView.userInteractionEnabled = false
+        outcomingMsgView.isUserInteractionEnabled = false
         outcomingMsgView.layer.cornerRadius = 4.0
         outcomingMsgView.clipsToBounds = true
         outcomingMsgContiner.addSubview(outcomingMsgView)
         
     //incoming container
-        incomingMsgContainer = UIView.init(frame: CGRectMake(margin, margin, screenWidth - 2*margin, halfFreeScreenHeight - 2*margin))
+        incomingMsgContainer = UIView.init(frame: CGRect(x: margin, y: margin, width: screenWidth - 2*margin, height: halfFreeScreenHeight - 2*margin))
         self.view.addSubview(incomingMsgContainer)
         
         //friend image view
-        friendImageView = UIImageView.init(frame: CGRectMake(0, 0, squareElementSide, squareElementSide))
+        friendImageView = UIImageView.init(frame: CGRect(x: 0, y: 0, width: squareElementSide, height: squareElementSide))
         friendImageView.image = Friend.get(friendId!)?.getImage()
         friendImageView.layer.cornerRadius = 4.0
         friendImageView.clipsToBounds = true
         incomingMsgContainer.addSubview(friendImageView)
         
         //incoming media button
-        incomingMediaButton = UIButton.init(frame: CGRectMake(0, squareElementSide + smallMargin, squareElementSide, squareElementSide))
-        incomingMediaButton.setBackgroundImage(UIImage(named: "NEW-PHOTO-GRAY"), forState: UIControlState.Normal)
-        incomingMediaButton.addTarget(self, action: "incomingMediaButtonPressed:", forControlEvents: UIControlEvents.TouchUpInside)
+        incomingMediaButton = UIButton.init(frame: CGRect(x: 0, y: squareElementSide + smallMargin, width: squareElementSide, height: squareElementSide))
+        incomingMediaButton.setBackgroundImage(UIImage(named: "NEW-PHOTO-GRAY"), for: UIControlState())
+        incomingMediaButton.addTarget(self, action: #selector(ChatViewController.incomingMediaButtonPressed(_:)), for: UIControlEvents.touchUpInside)
 //        incomingMediaButton.userInteractionEnabled = false
         incomingMsgContainer.addSubview(incomingMediaButton)
         
         //incomin msg view
-        incomingMsgView = UITextView.init(frame: CGRectMake(squareElementSide + smallMargin, 0, incomingMsgContainer.frame.size.width - squareElementSide - smallMargin, halfFreeScreenHeight - 2*margin))
+        incomingMsgView = UITextView.init(frame: CGRect(x: squareElementSide + smallMargin, y: 0, width: incomingMsgContainer.frame.size.width - squareElementSide - smallMargin, height: halfFreeScreenHeight - 2*margin))
         incomingMsgView.backgroundColor = UIColor.TurntWhite()
-        incomingMsgView.userInteractionEnabled = false
+        incomingMsgView.isUserInteractionEnabled = false
         incomingMsgView.layer.cornerRadius = 4.0
         incomingMsgView.clipsToBounds = true
         incomingMsgContainer.addSubview(incomingMsgView)
         
 //separating line
-        let separatorView = UIImageView.init(frame: CGRectMake(margin, halfFreeScreenHeight, screenWidth - 2*margin, 1))
+        let separatorView = UIImageView.init(frame: CGRect(x: margin, y: halfFreeScreenHeight, width: screenWidth - 2*margin, height: 1))
         separatorView.image = UIImage(named: "SEPARATOR")
         self.view.addSubview(separatorView)
     }
     
     func adjustViewToHideMediaMsg() {
-        self.navigationController!.navigationBar.hidden = false
+        self.navigationController!.navigationBar.isHidden = false
         self.view.frame.origin.y += 64
         self.view.frame.size.height -= 64.0
         enterMsgTextView.becomeFirstResponder()
     }
     
     func adjustViewToShowMediaMsg() {
-        self.navigationController!.navigationBar.hidden = true
+        self.navigationController!.navigationBar.isHidden = true
         self.view.frame.origin.y -= 64
         self.view.frame.size.height += 64.0
         enterMsgTextView.resignFirstResponder()
@@ -486,37 +486,37 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         self.adjustViewToShowMediaMsg()
 //        let tap = UITapGestureRecognizer.init(target: self, action: Selector("msgViewTapped:"))
 //        tap.delegate = self
-        let player = AVPlayer(URL: self.videoUrl)
+        let player = AVPlayer(url: self.videoUrl)
         playerController.player = player
         playerController.showsPlaybackControls = false
         self.addChildViewController(playerController)
 //        playerController.view.addGestureRecognizer(tap)
-        playerController.view.userInteractionEnabled = true
+        playerController.view.isUserInteractionEnabled = true
         self.view.addSubview(playerController.view)
         playerController.view.frame = self.view.frame
         player.play()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("hideVideoMsg:"),
-            name: AVPlayerItemDidPlayToEndTimeNotification, object: player.currentItem)
+        NotificationCenter.default.addObserver(self, selector: #selector(ChatViewController.hideVideoMsg(_:)),
+            name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
     }
     
-    func hideVideoMsg(note: NSNotification) {
+    func hideVideoMsg(_ note: Notification) {
         displayingMediaMode = false
         if (self.view.subviews.contains(playerController.view)) {
             playerController.view.removeFromSuperview()
             self.adjustViewToHideMediaMsg()
-            incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), forState: UIControlState.Normal)
-            incomingMediaButton.enabled = false
+            incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), for: UIControlState())
+            incomingMediaButton.isEnabled = false
         }
     }
     
     func showPhotoMsg() {
         displayingMediaMode = true
         self.adjustViewToShowMediaMsg()
-        let tap = UITapGestureRecognizer.init(target: self, action:"tapPhotoMsg:")
+        let tap = UITapGestureRecognizer.init(target: self, action:#selector(ChatViewController.tapPhotoMsg(_:)))
         tap.delegate = self
         photoMsgView = UIImageView(frame: self.view.frame)
         photoMsgView.image = photo
-        photoMsgView.userInteractionEnabled = true
+        photoMsgView.isUserInteractionEnabled = true
         photoMsgView.addGestureRecognizer(tap)
         self.view.addSubview(photoMsgView)
     }
@@ -527,12 +527,12 @@ class ChatViewController: UIViewController, UITextViewDelegate, WebSocketDelegat
         if (self.view.subviews.contains(photoMsgView)) {
             photoMsgView.removeFromSuperview()
             self.adjustViewToHideMediaMsg()
-            incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), forState: UIControlState.Normal)
-            incomingMediaButton.enabled = false
+            incomingMediaButton.setImage(UIImage(named: "NEW-PHOTO-GRAY"), for: UIControlState())
+            incomingMediaButton.isEnabled = false
         }
     }
     
-    func tapPhotoMsg(recognizer: UITapGestureRecognizer) {
+    func tapPhotoMsg(_ recognizer: UITapGestureRecognizer) {
         self.hidePhotoMsg();
     }
 }

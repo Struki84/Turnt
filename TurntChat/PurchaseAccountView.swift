@@ -9,7 +9,7 @@
 import UIKit
 protocol PurchaseAccountViewDelegate {
     
-    func showIAPPurchase(parentView: PurchaseAccountView) -> Void
+    func showIAPPurchase(_ parentView: PurchaseAccountView) -> Void
 }
 
 @IBDesignable
@@ -40,18 +40,18 @@ class PurchaseAccountView: UIView {
     func xibSetup() {
         view = loadViewFromNib()
         view.frame = bounds
-        view.autoresizingMask = [UIViewAutoresizing.FlexibleWidth, UIViewAutoresizing.FlexibleHeight]
+        view.autoresizingMask = [UIViewAutoresizing.flexibleWidth, UIViewAutoresizing.flexibleHeight]
         addSubview(view)
     }
     
     func loadViewFromNib() -> UIView {
-        let bundle = NSBundle(forClass: self.dynamicType)
+        let bundle = Bundle(for: type(of: self))
         let nib = UINib(nibName: "PurchaseAccountView", bundle: bundle)
-        let view = nib.instantiateWithOwner(self, options: nil)[0] as! UIView
+        let view = nib.instantiate(withOwner: self, options: nil)[0] as! UIView
         return view
     }
     
-    @IBAction func goToInAppPurchasePress(sender: AnyObject) {
+    @IBAction func goToInAppPurchasePress(_ sender: AnyObject) {
         self.delegate?.showIAPPurchase(self)
         
     }

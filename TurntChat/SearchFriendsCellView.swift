@@ -9,7 +9,7 @@
 import UIKit
 protocol SearchFriendsCellViewDelegate {
     
-    func appendFriend(sender: AnyObject) -> Void
+    func appendFriend(_ sender: AnyObject) -> Void
 }
 
 @IBDesignable
@@ -63,7 +63,7 @@ class SearchFriendsCellView: UITableViewCell {
     var delegate: SearchFriendsCellViewDelegate?
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String!) {
-        super.init(style: UITableViewCellStyle.Value1, reuseIdentifier: reuseIdentifier)
+        super.init(style: UITableViewCellStyle.value1, reuseIdentifier: reuseIdentifier)
         xibSetup()
         friendProfileImageView.layer.cornerRadius = friendProfileImageView.frame.size.width / 2;
         friendProfileImageView.clipsToBounds = true
@@ -79,19 +79,19 @@ class SearchFriendsCellView: UITableViewCell {
     func xibSetup() {
         view = loadViewFromNib()
         view.frame = bounds
-        view.autoresizingMask = [UIViewAutoresizing.FlexibleWidth, UIViewAutoresizing.FlexibleHeight]
+        view.autoresizingMask = [UIViewAutoresizing.flexibleWidth, UIViewAutoresizing.flexibleHeight]
         addSubview(view)
     }
 
     
     func loadViewFromNib() -> UIView {
-        let bundle = NSBundle(forClass: self.dynamicType)
+        let bundle = Bundle(for: type(of: self))
         let nib = UINib(nibName: "SearchFriendsViewCell", bundle: bundle)
-        let view = nib.instantiateWithOwner(self, options: nil)[0] as! UIView
+        let view = nib.instantiate(withOwner: self, options: nil)[0] as! UIView
         return view
     }
 
-    @IBAction func addFriend(sender: AnyObject) {
+    @IBAction func addFriend(_ sender: AnyObject) {
         self.delegate?.appendFriend(sender)
     }
 }

@@ -33,7 +33,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //MRAK: - View Lifecycle
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
 //        friendsTableView.reloadData()
         self.reloadFriendsTable()
     }
@@ -43,9 +43,9 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         addInfoView()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "requestTimeout", name: RequestNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "displayNotification:", name: "pushNotification", object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "becameActive", name: "appIsActive", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(HomeViewController.requestTimeout), name: NSNotification.Name(rawValue: RequestNotification), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(HomeViewController.displayNotification(_:)), name: NSNotification.Name(rawValue: "pushNotification"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(HomeViewController.becameActive), name: NSNotification.Name(rawValue: "appIsActive"), object: nil)
         
         friendsTableView.delegate = self
         friendsTableView.dataSource = self
@@ -57,19 +57,19 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         //TODO might be as UINavigationBar extension
         let navigationBar = self.navigationController?.navigationBar
-        navigationBar?.setBackgroundImage(UIImage(), forBarPosition: UIBarPosition.Any, barMetrics: UIBarMetrics.Default)
+        navigationBar?.setBackgroundImage(UIImage(), for: UIBarPosition.any, barMetrics: UIBarMetrics.default)
         navigationBar?.shadowImage = UIImage()
         
-        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: nil, action: nil)
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItemStyle.plain, target: nil, action: nil)
         
         accountScrollView.backgroundColor = UIColor.TurntPink()
         
         // set up the refresh control
-        self.refreshControl.addTarget(self, action: "refresh:", forControlEvents: UIControlEvents.ValueChanged)
+        self.refreshControl.addTarget(self, action: #selector(HomeViewController.refresh(_:)), for: UIControlEvents.valueChanged)
         self.friendsTableView.addSubview(refreshControl)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
        
         self.accounts = Account.all()
@@ -78,7 +78,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             var numAco = 0
             for aco in self.accounts! {
                 numAco += 1
-                if (aco == Account.findByUsername(NSUserDefaults.standardUserDefaults().valueForKey("loginAs")! as! String)) {
+                if (aco == Account.findByUsername(UserDefaults.standard.value(forKey: "loginAs")! as! String)) {
                     self.currentAccountPage = numAco - 1
                     currentAccountId = aco.id as Int?
                 }
@@ -99,18 +99,18 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
 
         let accountScrollViewWidth: CGFloat = self.view.frame.size.width * accountScrollViewWidthModifier
-        self.accountScrollView.contentSize = CGSizeMake(accountScrollViewWidth, self.accountScrollView.frame.size.height)
+        self.accountScrollView.contentSize = CGSize(width: accountScrollViewWidth, height: self.accountScrollView.frame.size.height)
         self.accountScrollView.delegate = self
         
         for subview in self.accountScrollView.subviews{
             subview.removeFromSuperview()
         }
         
-        for var i = 0; i < numberOffAccountViews; i++ {
+        for i in 0 ..< numberOffAccountViews {
             self.createAccountView(i)
         }
         
-        let viewStartingPoint = CGPointMake(CGFloat(currentAccountPage) * self.view.frame.size.width, 0)
+        let viewStartingPoint = CGPoint(x: CGFloat(currentAccountPage) * self.view.frame.size.width, y: 0)
         self.accountScrollView.setContentOffset(viewStartingPoint, animated: true)
 
         self.reloadFriendsTable()
@@ -121,11 +121,11 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         let infoViewX: CGFloat = (self.view.frame.size.width - 320)/2
         let calculatedTableViewHeight: CGFloat = self.view.frame.height - self.accountScrollView.frame.size.height - 66
         let infoViewY: CGFloat = (calculatedTableViewHeight-150)/2
-        infoView = InfoView.init(frame: CGRectMake(infoViewX, infoViewY, 320, 150))
+        infoView = InfoView.init(frame: CGRect(x: infoViewX, y: infoViewY, width: 320, height: 150))
         self.friendsTableView.addSubview(infoView)
     }
     
-    func createAccountView(atIndex: Int) {
+    func createAccountView(_ atIndex: Int) {
         let xOffset: CGFloat = self.view.frame.size.width * CGFloat(atIndex)
         let accountViewFrame: CGRect = CGRect(
             x: xOffset,
@@ -144,11 +144,11 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             accountView.accountImage.image = account.getImage()!
             if accountNotifications > 0 {
                 accountView.notificationLabel.text = "\(accountNotifications)"
-                accountView.notificationLabel.hidden = false
+                accountView.notificationLabel.isHidden = false
             }
             
-            let tapGestureRecognizer = UITapGestureRecognizer(target:self, action:Selector("imageTapped:"))
-            accountView.accountImage.userInteractionEnabled = !account.isImageAddedByUser()
+            let tapGestureRecognizer = UITapGestureRecognizer(target:self, action:#selector(HomeViewController.imageTapped(_:)))
+            accountView.accountImage.isUserInteractionEnabled = !account.isImageAddedByUser()
             accountView.accountImage.addGestureRecognizer(tapGestureRecognizer)
             
             accountScrollView.addSubview(accountView)
@@ -169,12 +169,12 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // MARK: - User Interaction
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "goToChat" {
 //            print("goToChat segue performing")
             let cell: UITableViewCell = sender as! UITableViewCell
-            let ChatController = segue.destinationViewController as! ChatViewController
-            ChatController.friendId = accounts![currentAccountPage].friends.allObjects[cell.tag].id as Int?
+            let ChatController = segue.destination as! ChatViewController
+            ChatController.friendId = (accounts![currentAccountPage].friends.allObjects[cell.tag] as AnyObject).id as Int?
             ChatController.accountId = currentAccountId
             
 //            let account: Account = accounts![currentAccountPage]
@@ -182,17 +182,17 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         else if segue.identifier == "goToSettings" {
 //            print("Page \(self.currentAccountPage), id : \(accounts![currentAccountPage].id)")
-            let SettingsController = segue.destinationViewController as! SettingsViewController
+            let SettingsController = segue.destination as! SettingsViewController
             SettingsController.accountId = accounts![currentAccountPage].id as NSNumber
         }
         else if segue.identifier == "goToSearch" {
 //            print("goToSearch segue performing")
-            let SearchController = segue.destinationViewController as! SearchViewController
+            let SearchController = segue.destination as! SearchViewController
             SearchController.accountId = accounts![currentAccountPage].id as NSNumber
         }
     }
     
-    func refresh(sender: AnyObject) {
+    func refresh(_ sender: AnyObject) {
         self.apiRequest.getFriendsForUser(["id": "\(self.accounts![self.currentAccountPage].id)"], completionHandler: { (success, friends, error) -> Void in
             if (success) {
                 let accountToUpdate: Account = Account.get(self.accounts![self.currentAccountPage].id)!
@@ -211,13 +211,13 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         })
     }
     
-    func addNewAccount(parentView: AddNewAccountView, inputUsername: String) -> Bool {
+    func addNewAccount(_ parentView: AddNewAccountView, inputUsername: String) -> Bool {
         apiRequest.createAccount(["username" : inputUsername], completionHandler: { (success, accountCreated, userAccounts, responseBody, error) -> Void in
             if success {
                 print("Account Created")
                 Account.create(responseBody["account"], completed: {_ in })
                 self.accounts = Account.all()
-                UIView.animateWithDuration(0.4, animations: { () -> Void in
+                UIView.animate(withDuration: 0.4, animations: { () -> Void in
                     if self.accounts!.count == ConfigManager.sharedInstance.maxAllowedAccounts! - 1 {
                         parentView.removeFromSuperview()
                     }
@@ -226,12 +226,12 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                         parentView.frame.origin.x += self.view.frame.width
                     }
                     }, completion: { (completed) -> Void in
-                        self.navigationItem.rightBarButtonItem?.enabled = true
-                        self.navigationItem.leftBarButtonItem?.enabled = true
+                        self.navigationItem.rightBarButtonItem?.isEnabled = true
+                        self.navigationItem.leftBarButtonItem?.isEnabled = true
                         self.viewWillAppear(true)
                         self.accounts = Account.all()
                         self.createAccountView(self.accounts!.count - 1)
-                        let viewStartingPoint = CGPointMake(CGFloat(self.accounts!.count - 1) * self.view.frame.size.width, 0)
+                        let viewStartingPoint = CGPoint(x: CGFloat(self.accounts!.count - 1) * self.view.frame.size.width, y: 0)
                         self.accountScrollView.setContentOffset(viewStartingPoint, animated: true)
 //                        self.friendsTableView.reloadData()
                         self.reloadFriendsTable()
@@ -242,7 +242,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //TODO: debug this method
-    func approveFriend(button: UIButton) {
+    func approveFriend(_ button: UIButton) {
         print("homeVC approveFriend button pressed")
         
         let approvedFriend: Friend = accounts![currentAccountPage].friends.allObjects[button.tag] as! Friend
@@ -250,7 +250,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             "target_account_id": "\(approvedFriend.id)",
             "account_id": "\(currentAccountId!)"
         ]
-        button.enabled = false
+        button.isEnabled = false
         apiRequest.confirmFriendRequest(requestBody) { (success, friendRequestConfirmed, userAccount, responseBody, error) -> Void in
             if success {
                 if friendRequestConfirmed {
@@ -264,23 +264,23 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    func imageTapped(img: AnyObject) {
+    func imageTapped(_ img: AnyObject) {
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
-        imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+        imagePicker.sourceType = UIImagePickerControllerSourceType.savedPhotosAlbum
         imagePicker.navigationBar.barTintColor = UIColor.TurntPink()
-        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.whiteColor()]
-        imagePicker.navigationBar.tintColor = UIColor.whiteColor()
-        imagePicker.navigationBar.barStyle = .Black
-        imagePicker.navigationBar.translucent = false
+        imagePicker.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName : UIColor.white]
+        imagePicker.navigationBar.tintColor = UIColor.white
+        imagePicker.navigationBar.barStyle = .black
+        imagePicker.navigationBar.isTranslucent = false
         
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum){
-            self.presentViewController(imagePicker, animated: true, completion: nil)
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum){
+            self.present(imagePicker, animated: true, completion: nil)
         }
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
-        self.dismissViewControllerAnimated(true, completion: { () -> Void in
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [AnyHashable: Any]!) {
+        self.dismiss(animated: true, completion: { () -> Void in
             
             self.accounts![self.currentAccountPage].image = UIImageJPEGRepresentation(image, 0.5)!
             self.accounts![self.currentAccountPage].save()
@@ -294,7 +294,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 "username"  : "\(accountToUpdate.username)",
                 "active"    : "\(accountToUpdate.active)",
                 "visible"   : "\(accountToUpdate.visible)",
-                "image"     : accountToUpdate.image.base64EncodedStringWithOptions([]),
+                "image"     : accountToUpdate.image.base64EncodedString(options: []),
             ]
             
             //TODO: Handle errors
@@ -321,25 +321,25 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         reloadFriendsTable()
     }
     
-    func displayNotification(n: NSNotification) {
+    func displayNotification(_ n: Notification) {
         reloadFriendsTable()
         let nData = n.userInfo!["aps"] as! NSDictionary
-        let alert = nData.valueForKey("alert")
+        let alert = nData.value(forKey: "alert")
         if (alert != nil) {
             displayNotificationWithText(alert as! String)
         }
     }
     
     //MARK: - Table View Delegate methods
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 64
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         var friendsCount: Int = 0
         if currentAccountPage < self.accounts!.count {
             if let account = accounts?[currentAccountPage] {
@@ -348,22 +348,22 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         if (friendsCount > 0) {
-            infoView.hidden = true
+            infoView.isHidden = true
         } else {
-            infoView.hidden = false
+            infoView.isHidden = false
         }
         
         return friendsCount
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let row = indexPath.row
-        let cell = friendsTableView.dequeueReusableCellWithIdentifier("FriendCell", forIndexPath: indexPath) as! FriendTableViewCell
+        let cell = friendsTableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath) as! FriendTableViewCell
         let friends = accounts![currentAccountPage].friends.allObjects
         cell.preservesSuperviewLayoutMargins = false
-        cell.separatorInset = UIEdgeInsetsZero
-        cell.layoutMargins = UIEdgeInsetsZero
+        cell.separatorInset = UIEdgeInsets.zero
+        cell.layoutMargins = UIEdgeInsets.zero
         cell.tag = row
         cell.delegate = self
         if friends.count != 0 {
@@ -377,21 +377,21 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
             if friend.confirmed as Bool != true {
                 cell.connectionStatusLabel.text = "Pending approval..."
                 if (friend.poked_me as Bool == true) {
-                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "PLUS"), forState: UIControlState.Normal)
-                    cell.approveFriendButton.hidden = false
-                    cell.approveFriendButton.enabled = true
+                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "PLUS"), for: UIControlState())
+                    cell.approveFriendButton.isHidden = false
+                    cell.approveFriendButton.isEnabled = true
                 }
                 else {
-                    cell.approveFriendButton.hidden = true
+                    cell.approveFriendButton.isHidden = true
                 }
             }
             else {
-                cell.approveFriendButton.hidden = false
-                cell.approveFriendButton.enabled = true
+                cell.approveFriendButton.isHidden = false
+                cell.approveFriendButton.isEnabled = true
                 if (friend.poked_me as Bool) {
-                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "NOTIFICATION1"), forState: UIControlState.Normal)
+                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "NOTIFICATION1"), for: UIControlState())
                 } else {
-                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "NOTIFICATION2"), forState: UIControlState.Normal)
+                    cell.approveFriendButton.setBackgroundImage(UIImage(named: "NOTIFICATION2"), for: UIControlState())
                 }
 
                 if friend.online as Bool {
@@ -410,19 +410,19 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         return cell
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell = friendsTableView.dequeueReusableCellWithIdentifier("FriendCell", forIndexPath: indexPath) as! FriendTableViewCell
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = friendsTableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath) as! FriendTableViewCell
         cell.tag = indexPath.row
         
         let friends = accounts![currentAccountPage].friends.allObjects
         let friend = friends[indexPath.row] as! Friend
         if (friend.confirmed == 1) {
-            performSegueWithIdentifier("goToChat", sender: cell)
+            performSegue(withIdentifier: "goToChat", sender: cell)
         }
     }
     
-    func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
-        let deleteAction = UITableViewRowAction(style: .Normal, title: "Delete") { (rowAction:UITableViewRowAction, indexPath:NSIndexPath) -> Void in
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let deleteAction = UITableViewRowAction(style: .normal, title: "Delete") { (rowAction:UITableViewRowAction, indexPath:IndexPath) -> Void in
             let friend: Friend = self.accounts![self.currentAccountPage].friends.allObjects[indexPath.row] as! Friend
                 let requestBody: [String: String] = [
                     "account_id" : "\(self.currentAccountId!)",
@@ -442,14 +442,14 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                         }
                     }
                 })
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Left)
+                tableView.deleteRows(at: [indexPath], with: .left)
         }
         deleteAction.backgroundColor = UIColor.TurntPink()
         return [deleteAction]
     }
     
     //MARK: - Scroll View Delegate methods
-    func scrollViewDidScroll(scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
 
         if(firstTimeAfterLogin) {
             self.firstTimeAfterLogin = false
@@ -459,15 +459,15 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let page = Int((scrollView.contentOffset.x + (0.5 * width)) / width);
                 if (self.currentAccountPage != page) {
                     self.currentAccountPage = page
-                    self.navigationItem.rightBarButtonItem?.enabled = true
-                    self.navigationItem.leftBarButtonItem?.enabled = true
+                    self.navigationItem.rightBarButtonItem?.isEnabled = true
+                    self.navigationItem.leftBarButtonItem?.isEnabled = true
 
                     if page < self.accounts!.count {
                         currentAccountId = accounts![page].id as Int?
                     }
                     else {
-                        self.navigationItem.rightBarButtonItem?.enabled = false
-                        self.navigationItem.leftBarButtonItem?.enabled = false
+                        self.navigationItem.rightBarButtonItem?.isEnabled = false
+                        self.navigationItem.leftBarButtonItem?.isEnabled = false
                     }
 //                    friendsTableView.reloadData()
                     self.reloadFriendsTable()
@@ -477,24 +477,24 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //MARK: - Helpers
-    func showIAPPurchase(parentView: PurchaseAccountView) {
+    func showIAPPurchase(_ parentView: PurchaseAccountView) {
         let alertController = UIAlertController(
             title: "Purchase more accounts!",
             message: "In App Purchase is not enabled at the moment, It will be available in the next beta realese",
-            preferredStyle: UIAlertControllerStyle.Alert
+            preferredStyle: UIAlertControllerStyle.alert
         )
-        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default,handler: nil))
-        self.presentViewController(alertController, animated: true, completion: nil)
+        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default,handler: nil))
+        self.present(alertController, animated: true, completion: nil)
     }
     
-    func showAlert(content: String?){
+    func showAlert(_ content: String?){
         let alertController = UIAlertController(
             title: "Ooops! There was a problem!",
             message: content,
-            preferredStyle: UIAlertControllerStyle.Alert
+            preferredStyle: UIAlertControllerStyle.alert
         )
-        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default,handler: nil))
-        self.presentViewController(alertController, animated: true, completion: nil)
+        alertController.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default,handler: nil))
+        self.present(alertController, animated: true, completion: nil)
     }
 
     func reloadFriendsTable(){
@@ -518,31 +518,31 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     //MARK: - Display notification
-    func displayNotificationWithText(text: String) {
+    func displayNotificationWithText(_ text: String) {
 //        if (!self.view.subviews.contains(self.notificationView)) {
-            self.notificationView = UITextView.init(frame: CGRectMake(0, -msgHeight, self.view.frame.size.width, msgHeight))
+            self.notificationView = UITextView.init(frame: CGRect(x: 0, y: -msgHeight, width: self.view.frame.size.width, height: msgHeight))
             self.notificationView.text = text
-            self.notificationView.userInteractionEnabled = false
-            self.notificationView.textAlignment = .Center
-            self.notificationView.font = UIFont.systemFontOfSize(15)
-            self.notificationView.opaque = true
+            self.notificationView.isUserInteractionEnabled = false
+            self.notificationView.textAlignment = .center
+            self.notificationView.font = UIFont.systemFont(ofSize: 15)
+            self.notificationView.isOpaque = true
             self.notificationView.textColor = UIColor.TurntPink()
             self.notificationView.backgroundColor = UIColor(white: 1, alpha: 0.7)
-            let tap = UITapGestureRecognizer.init(target: self, action:"hideNotification:")
+            let tap = UITapGestureRecognizer.init(target: self, action:#selector(HomeViewController.hideNotification(_:)))
             tap.delegate = self
             self.notificationView.addGestureRecognizer(tap)
             self.view.addSubview(notificationView)
-            UIView.animateWithDuration(0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: [], animations: {
+            UIView.animate(withDuration: 0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.7, options: [], animations: {
                 self.notificationView.frame.origin.y += self.msgHeight
                 }, completion: nil)
-            let dispatchTime: dispatch_time_t = dispatch_time(DISPATCH_TIME_NOW, Int64(5 * Double(NSEC_PER_SEC)))
-            dispatch_after(dispatchTime, dispatch_get_main_queue(), {
+            let dispatchTime: DispatchTime = DispatchTime.now() + Double(Int64(5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: {
                 self.hideNotification(tap)
             })
 //        }
     }
     
-    func hideNotification(recognizer: UIGestureRecognizer) {
+    func hideNotification(_ recognizer: UIGestureRecognizer) {
         if (self.view.subviews.contains(self.notificationView)) {
             self.notificationView.removeFromSuperview()
         }
